@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mario</title>
     <style>
         * {
@@ -13,13 +13,17 @@
 
         body {
             position: relative;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
         }
 
         .game-board {
             width: 100%;
-            height: 500px;
+            height: 100%;
+            min-height: 300px;
+            max-height: 500px;
             border-bottom: 15px solid #11971c;
-            margin: 0 auto;
             position: relative;
             overflow: hidden;
             background: linear-gradient(#68bddf, #e0e0e0);
@@ -29,22 +33,26 @@
         .pipe {
             position: absolute;
             bottom: -4%;
-            width: 70px;
+            width: 15%;
+            max-width: 70px;
             animation: pipe-animation 2s infinite linear;
         }
 
         .mario {
-            width: 150px;
+            width: 20%;
+            max-width: 150px;
             position: absolute;
             bottom: 0px;
         }
+
         .jump {
             animation: jump 500ms ease-out;
         }
 
         .clouds {
             position: absolute;
-            width: 550px;
+            width: 50%;
+            max-width: 550px;
             animation: clouds-animation 10s infinite linear;
         }
 
@@ -65,16 +73,11 @@
             z-index: 10;
         }
 
-        .restart-btn:hover {
-            background-color: #cc0000;
-        }
-
         @keyframes pipe-animation {
-            from{
-                right: -80px;
+            from {
+                right: -15%;
             }
-
-            to{
+            to {
                 right: 100%;
             }
         }
@@ -84,16 +87,14 @@
                 bottom: 0;
             }
             40% {
-                bottom: 180px;
+                bottom: 30%;
             }
-
             50% {
-                bottom: 180px;
+                bottom: 30%;
             }
             60% {
-                bottom: 180px;
+                bottom: 30%;
             }
-
             100% {
                 bottom: 0;
             }
@@ -101,20 +102,30 @@
         
         @keyframes clouds-animation {
             from {
-                right: -550px;
+                right: -50%;
             }
-
             to {
                 right: 100%;
+            }
+        }
+
+        /* Ajustes para telas muito pequenas */
+        @media (max-height: 500px) {
+            .game-board {
+                max-height: 100vh;
+            }
+            .restart-btn {
+                padding: 10px 20px;
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
     <div class="game-board">
-      <img src="clouds.png" class="clouds">
-      <img src="mario.gif" class="mario">
-      <img src="pipe.png" class="pipe">
+      <img src="C:\Users\user_02\OneDrive\Área de Trabalho\Projeto Gênesis\img/clouds.png" class="clouds">
+      <img src="C:\Users\user_02\OneDrive\Área de Trabalho\Projeto Gênesis\img/mario.gif" class="mario">
+      <img src="C:\Users\user_02\OneDrive\Área de Trabalho\Projeto Gênesis\img/pipe.png" class="pipe">
     </div>
     
     <button class="restart-btn">REINICIAR</button>
@@ -124,6 +135,20 @@
         const pipe = document.querySelector('.pipe');
         const gameBoard = document.querySelector('.game-board');
         const restartBtn = document.querySelector('.restart-btn');
+        let loop;
+
+        // Ajusta o tamanho do jogo conforme a tela
+        function adjustGameSize() {
+            const boardHeight = Math.min(window.innerHeight * 0.8, 500);
+            gameBoard.style.height = `${boardHeight}px`;
+            
+            // Ajusta a velocidade conforme o tamanho da tela
+            const pipeSpeed = Math.max(1.5, 2 * (boardHeight / 500));
+            document.styleSheets[0].insertRule(
+                `@keyframes pipe-animation { from { right: -15%; } to { right: 100%; } }`,
+                document.styleSheets[0].cssRules.length
+            );
+        }
 
         const jump = () => {
             if (!mario.classList.contains('jump')) {
@@ -135,57 +160,23 @@
             }
         }
 
-        const loop = setInterval(() => {
-           const pipePosition = pipe.offsetLeft;
-           const marioPosition = +window.getComputedStyle(mario).bottom.replace('px', '');
-
-           if (pipePosition < 120 && pipePosition > 0 && marioPosition < 90) {
-             pipe.style.animation = 'none';
-             pipe.style.left = `${pipePosition}px`;
-
-             mario.style.animation = 'none';
-             mario.style.bottom = `${marioPosition}px`;
-
-             mario.src = 'game-over.png';
-             mario.style.width = '75px';
-             mario.style.marginLeft = '50px';
-
-             clearInterval(loop);
-             
-             // Mostra o botão de reiniciar
-             restartBtn.style.display = 'block';
-           }
-        }, 10);
-
-        // Função para reiniciar o jogo
-        const restartGame = () => {
-            // Reseta as posições e animações
-            pipe.style.animation = '';
-            pipe.style.left = '';
+        function startGame() {
+            adjustGameSize();
             
-            mario.style.animation = '';
-            mario.style.bottom = '';
-            mario.src = 'mario.gif';
-            mario.style.width = '150px';
-            mario.style.marginLeft = '';
-            
-            // Esconde o botão de reiniciar
-            restartBtn.style.display = 'none';
-            
-            // Recria o loop do jogo
             loop = setInterval(() => {
                const pipePosition = pipe.offsetLeft;
                const marioPosition = +window.getComputedStyle(mario).bottom.replace('px', '');
+               const marioWidth = +window.getComputedStyle(mario).width.replace('px', '');
 
-               if (pipePosition < 120 && pipePosition > 0 && marioPosition < 90) {
+               if (pipePosition < marioWidth && pipePosition > 0 && marioPosition < marioWidth * 0.6) {
                  pipe.style.animation = 'none';
                  pipe.style.left = `${pipePosition}px`;
 
                  mario.style.animation = 'none';
                  mario.style.bottom = `${marioPosition}px`;
 
-                 mario.src = 'game-over.png';
-                 mario.style.width = '75px';
+                 mario.src = 'C:\\Users\\user_02\\OneDrive\\Área de Trabalho\\Projeto Gênesis\\img\\game-over.png';
+                 mario.style.width = `${marioWidth * 0.5}px`;
                  mario.style.marginLeft = '50px';
 
                  clearInterval(loop);
@@ -194,19 +185,32 @@
             }, 10);
         }
 
-        // Controles para teclado
+        // Função para reiniciar o jogo
+        const restartGame = () => {
+            pipe.style.animation = '';
+            pipe.style.left = '';
+            
+            mario.style.animation = '';
+            mario.style.bottom = '';
+            mario.src = 'C:\\Users\\user_02\\OneDrive\\Área de Trabalho\\Projeto Gênesis\\img\\mario.gif';
+            mario.style.width = '';
+            mario.style.marginLeft = '';
+            
+            restartBtn.style.display = 'none';
+            startGame();
+        }
+
+        // Inicia o jogo quando a página carrega
+        window.addEventListener('load', startGame);
+        window.addEventListener('resize', adjustGameSize);
+
+        // Controles
         document.addEventListener('keydown', jump);
-        
-        // Controles para touch (dispositivos móveis)
         gameBoard.addEventListener('touchstart', (e) => {
             e.preventDefault();
             jump();
         });
-        
-        // Controle com click do mouse
         gameBoard.addEventListener('click', jump);
-        
-        // Evento para o botão de reiniciar
         restartBtn.addEventListener('click', restartGame);
     </script>
 </body>
